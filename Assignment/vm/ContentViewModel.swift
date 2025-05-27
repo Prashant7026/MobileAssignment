@@ -23,8 +23,10 @@ class ContentViewModel : ObservableObject {
     }
 
     func fetchAPI() {
-        apiService.fetchDeviceDetails(completion: { item in
-            self.data = item
+        apiService.fetchDeviceDetails(completion: { [weak self] item in
+            guard let welf = self else { return }
+            
+            welf.data = item
         })
     }
     
