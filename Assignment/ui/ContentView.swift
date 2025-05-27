@@ -14,12 +14,23 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $path) {
             Group {
-                if let computers = viewModel.data, !computers.isEmpty {
-                    DevicesList(devices: computers) { selectedComputer in
-                        viewModel.navigateToDetail(navigateDetail: selectedComputer)
+                VStack {
+                    textFieldView()
+                    
+                    if let computers = viewModel.data, !computers.isEmpty {
+                        if !viewModel.searchedData.isEmpty {
+                            DevicesList(devices: viewModel.searchedData) { selectedComputer in
+                                viewModel.navigateToDetail(navigateDetail: selectedComputer)
+                            }
+                        } else {
+                            DevicesList(devices: computers) { selectedComputer in
+                                viewModel.navigateToDetail(navigateDetail: selectedComputer)
+                            }
+                        }
+                    } else {
+                        ProgressView("Loading...")
                     }
-                } else {
-                    ProgressView("Loading...")
+                    Spacer()
                 }
             }
             .onChange(of: viewModel.navigateDetail, {
@@ -34,6 +45,13 @@ struct ContentView: View {
                 viewModel.fetchAPI()
             }
         }
+    }
+    
+    private func textFieldView() -> some View {
+        TextField("Search text", text: $viewModel.textFieldText)
+            .padding()
+            .background(Color.gray.opacity(0.7))
+            .cornerRadius(8.0)
     }
 }
 
