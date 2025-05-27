@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import Network
 
 
 class ContentViewModel : ObservableObject {
@@ -16,17 +17,40 @@ class ContentViewModel : ObservableObject {
     @Published var data: [DeviceData]? = []
     @Published var textFieldText = ""
     @Published var searchedData: [DeviceData] = []
+    @Published var isUserConnectedWithInternet: Bool = true
     private var cancellables = Set<AnyCancellable>()
+    private let userDefaultKey = "AppData"
+    private let monitor = NWPathMonitor()
     
     init() {
+        monitorInternetConnection()
         subscribeTextFieldText()
+        subscribeInternetConnection()
+    }
+    
+    func subscribeInternetConnection() {
+        $isUserConnectedWithInternet
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] value in
+                guard let welf = self else {
+                    return
+                }
+                
+                if value {
+                    welf.fetchAPI()
+                } else {
+                    welf.getPersistentData()
+                }
+            }
+            .store(in: &cancellables)
     }
 
-    func fetchAPI() {
+    private func fetchAPI() {
         apiService.fetchDeviceDetails(completion: { [weak self] item in
             guard let welf = self else { return }
             
             welf.data = item
+            welf.saveData(item)
         })
     }
     
@@ -64,5 +88,35 @@ extension ContentViewModel {
         }
         
         print("searchedData -> \(searchedData)")
+    }
+}
+
+extension ContentViewModel {
+    func getPersistentData() {
+        if let storedData = UserDefaults.standard.string(forKey: userDefaultKey) {
+            print("Prashant- \(storedData)")
+        }
+    }
+    
+    private func saveData(_ data: [DeviceData]) {
+        UserDefaults.standard.set(data, forKey: userDefaultKey)
+    }
+}
+
+extension ContentViewModel {
+    func monitorInternetConnection () {
+        monitor.pathUpdateHandler = { [weak self] path in
+            guard let welf = self else {
+                return
+            }
+            
+            if path.status == .satisfied {
+                print("Internet connection is available")
+                welf.isUserConnectedWithInternet = true
+            } else {
+                print("Internet connection is not available")
+                welf.isUserConnectedWithInternet = false
+            }
+        }
     }
 }

@@ -41,9 +41,14 @@ struct ContentView: View {
             .navigationDestination(for: DeviceData.self) { computer in
                 DetailView(device: computer)
             }
-            .task {
-                viewModel.fetchAPI()
-            }
+//            .task {
+//                print("Prashant - Task")
+//                viewModel.fetchData()
+//            }
+//            .onAppear {
+//                print("Prashant - OnAppear")
+//                viewModel.monitorInternetConnection()
+//            }
         }
     }
     
