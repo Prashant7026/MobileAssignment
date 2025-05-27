@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    private var viewModel = ContentViewModel()
+    @StateObject private var viewModel = ContentViewModel()
     @State private var path: [DeviceData] = [] // Navigation path
 
     var body: some View {
@@ -38,6 +38,13 @@ struct ContentView: View {
                     }
                 }
             }
+            .task {
+                viewModel.fetchAPI()
+            }
         }
     }
+}
+
+#Preview {
+    ContentView()
 }
