@@ -35,6 +35,8 @@ class ContentViewModel : ObservableObject {
     }
 }
 
+
+// MARK: TextField
 extension ContentViewModel {
     private func subscribeTextFieldText() {
         $textFieldText
